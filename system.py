@@ -7,17 +7,32 @@ import os
 
 def preprocess():
     global details_of_cars, details_map
-    cars = open("cars.txt")
-    cars_all = cars.read()
-    cars_list = cars_all.split("\n")
-    cars.close()
+    
+    # Initialisation des variables globales si ce n'est pas déjà fait
+    details_of_cars = []
+    details_map = {}
+    
+    try:
+        # Lecture du fichier principal contenant la liste des voitures
+        with open("cars.txt") as cars:
+            cars_list = [car.strip() for car in cars if car.strip()]  # Filtre les lignes vides
+    except FileNotFoundError:
+        print("Le fichier cars.txt est introuvable.")
+        return
+
     for single_car in cars_list:
-        s_car_file = open("Cars_details/Cars_info/"+single_car+".txt")
-        a = s_car_file.read()
-        detail_list = a.split("\n")
-        details_of_cars.append(detail_list)
-        details_map[str(detail_list)] = single_car
-        s_car_file.close()
+        try:
+            # Lecture des détails pour chaque voiture
+            file_path = f"Cars_details/Cars_info/{single_car}.txt"
+            with open(file_path) as s_car_file:
+                detail_list = [line.strip() for line in s_car_file if line.strip()]  # Filtre les lignes vides
+                details_of_cars.append(detail_list)
+                details_map[str(detail_list)] = single_car
+        except FileNotFoundError:
+            print(f"Le fichier {file_path} est introuvable. Voiture ignorée.")
+        except Exception as e:
+            print(f"Erreur lors de la lecture de {single_car}.txt : {e}")
+
 
 
 def identify_car(*args):
@@ -93,7 +108,7 @@ class findYourCar(KnowledgeEngine):
             print("Réponse non valide, tout est défini à 'non'.")
             self.declare(Fact(P5="non"), Fact(P2="non"))
 
-    @Rule(Fact(action='find_car'), NOT(Fact(V2=W())), NOT(Fact(V4=W())), salience=11)
+    @Rule(Fact(action='find_car'), NOT(Fact(V2=W())), NOT(Fact(V4=W())), salience=15)
     def Question_doors(self):
         doors = input("🔑 Préférez-vous une voiture avec 2 portes ou 4 portes? (répondez avec '2' ou '4') ~> ").strip()
         if doors == "2":
@@ -105,7 +120,7 @@ class findYourCar(KnowledgeEngine):
             self.declare(Fact(V2="non"), Fact(V4="non"))
 
     # Catégorie pour les boîtes de vitesse : une seule question posée, les autres sont définies par défaut sur "non"
-    @Rule(Fact(action='find_car'), NOT(Fact(A=W())), NOT(Fact(M=W())), salience=9)
+    @Rule(Fact(action='find_car'), NOT(Fact(A=W())), NOT(Fact(M=W())), salience=14)
     def Question_transmission(self):
         transmission = input("🔑 Préférez-vous une voiture avec une boîte de vitesse automatique ou manuelle? (répondez avec 'auto' ou 'manuelle') ~> ").strip().lower()
         if transmission == "auto":
@@ -117,17 +132,17 @@ class findYourCar(KnowledgeEngine):
             self.declare(Fact(A="non"), Fact(M="non"))
 
 
-    @Rule(Fact(action='find_car'), NOT(Fact(MA=W())), salience=7)
+    @Rule(Fact(action='find_car'), NOT(Fact(MA=W())), salience=13)
     def Question_11(self):
         self.declare(
             Fact(MA=input("🔑 Vous voulez des équipement de motorisation avancé ? (répondez avec oui/non) ~> ")))
 
-    @Rule(Fact(action='find_car'), NOT(Fact(SA=W())), salience=6)
+    @Rule(Fact(action='find_car'), NOT(Fact(SA=W())), salience=12)
     def Question_12(self):
         self.declare(
             Fact(SA=input("🔑 Vous voulez des équipement de sécurité avancé ? (répondez avec oui/non) ~> ")))
 
-    @Rule(Fact(action='find_car'), NOT(Fact(CA=W())), salience=5)
+    @Rule(Fact(action='find_car'), NOT(Fact(CA=W())), salience=11)
     def Question_13(self):
         self.declare(
             Fact(CA=input("🔑 Vous voulez des équipement de confort avancée ? (répondez avec oui/non) ~> ")))
@@ -138,7 +153,7 @@ class findYourCar(KnowledgeEngine):
         NOT(Fact(C2=W())), 
         NOT(Fact(C3=W())), 
         NOT(Fact(C4=W())), 
-        salience=4)
+        salience=10)
     def Question_couleurs(self):
         couleur = input(
             "🔑 Quelle couleur préférez-vous pour votre voiture? (répondez avec 'rouge', 'bleu', 'noir', ou 'blanc') ~> "
@@ -162,7 +177,7 @@ class findYourCar(KnowledgeEngine):
         NOT(Fact(Travail=W())), 
         NOT(Fact(Loisir=W())), 
         NOT(Fact(Familiale=W())), 
-        salience=15)
+        salience=9)
     def Question_besoin(self):
         # Question pour Voyage
         voyage = input("🔑 Avez-vous besoin de cette voiture pour un *voyage* ? (oui/non) ~> ").strip().lower()
@@ -203,10 +218,8 @@ class findYourCar(KnowledgeEngine):
           Fact(Voyage="non"), Fact(Travail="non"), Fact(Loisir="oui"), Fact(Familiale="non"))
     def car_1(self):
         self.declare(Fact(car="lamborghini_Rouge"))
-        #print("La voiture convenable pour vous est  lamborghini_Rouge \n")
-        im = Image.open("Cars_details/Cars_photos/lamborghini_gallardo.jpg")
+        im = Image.open("Cars_details/Cars_photos/lamborghini_Rouge.jpg")
         im.show()
-        #self.declare(Fact(clrShowed="yes"))
 
     @Rule(Fact(action='find_car'),
           Fact(BE="oui"), Fact(BM="non"), Fact(BF="non"),
